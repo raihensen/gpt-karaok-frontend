@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+  // url               = env("DATABASE_URL")
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Session {
+  id      Int      @id @default(autoincrement())
+  key     String   @unique
+  state   Int      @default(0)
+  players Player[]
+}
+
+model Player {
+  id        String  @id @default(uuid())
+  name      String
+  state     Int     @default(0)
+  sessionId Int
+  session   Session @relation(fields: [sessionId], references: [id])
+  topics    Topic[]
+}
+
+model Topic {
+  id       Int    @id @default(autoincrement())
+  name     String
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id])
+}

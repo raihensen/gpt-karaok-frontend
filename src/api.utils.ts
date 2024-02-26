@@ -38,7 +38,7 @@ export async function refreshState(db: PrismaClient, session: Session) {
   }
 
   let newState = SessionState.INIT
-  if (session.players.every(p => p.state == PlayerState.SUBMITTED)) {
+  if (session.players.length != 0 && session.players.every(p => p.state == PlayerState.SUBMITTED)) {
     newState = SessionState.READY
   }
   if (session.state != newState) {

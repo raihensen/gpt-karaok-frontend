@@ -53,6 +53,11 @@ export default function ManagePage({ params }: { params: { session: string } }) 
                 {getSessionInvitationLink(session)}
               </Button>
             </div>
+            <p className="mb-3">
+              <a onClick={() => {
+                navigator.clipboard.writeText(session.id)
+              }}>Session ID kopieren</a>
+            </p>
 
             {session.players.length != 0 && (<>
               <div className="mb-3">

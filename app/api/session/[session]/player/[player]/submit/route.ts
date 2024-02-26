@@ -30,7 +30,7 @@ export async function POST(
   const topics = topicsDef.split(",").map(t => t.trim())
 
   await db.topic.deleteMany({ where: { playerId: player.id } })
-  await Promise.all(topics.map(t => db.topic.create({ data: { name: t, playerId: player.id as Player["id"] } })))
+  await db.topic.createMany({ data: topics.map(t => ({ name: t, playerId: player.id as Player["id"] })) })
   await db.player.update({ where: { id: player.id }, data: { state: PlayerState.SUBMITTED } })
 
   const player1 = await db.player.findUnique({ where: { id: player.id }, include: { topics: true } })

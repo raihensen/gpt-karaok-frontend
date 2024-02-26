@@ -94,18 +94,18 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
               setSessionId(resData.session.id)
             }
           }}>
-            <Form.Group>
+            <Form.Group className="mb-2">
               <Form.Label>Dein Name</Form.Label>
               <Form.Control value={name ?? ""} onChange={e => setName(e.target.value)} disabled={!invitationCode}></Form.Control>
             </Form.Group>
             <Form.Group>
-              <Button type="submit" disabled={!invitationCode}>Join</Button>
+              <Button type="submit" disabled={!invitationCode}>Beitreten</Button>
             </Form.Group>
           </Form>
         </>)}
 
         {(player?.state == PlayerState.JOINED) && (<>
-          <Form className="d-flex flex-column gap-1" onSubmit={async e => {
+          <Form className="d-flex flex-column gap-2" onSubmit={async e => {
             e.preventDefault()
             if (sessionId && player && topics.length) {
 

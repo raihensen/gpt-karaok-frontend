@@ -33,9 +33,13 @@ export function respond(db: PrismaClient, session: Session, player?: Player | un
 }
 
 export async function refreshState(db: PrismaClient, session: Session) {
+  if (session.state == SessionState.CLOSED) {
+    return
+  }
+
   let newState = SessionState.INIT
   if (session.players.every(p => p.state == PlayerState.SUBMITTED)) {
-    session.state = SessionState.READY
+    newState = SessionState.READY
   }
   if (session.state != newState) {
     await db.session.update({ where: { id: session.id }, data: { state: newState }})

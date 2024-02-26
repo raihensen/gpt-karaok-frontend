@@ -43,6 +43,7 @@ export enum PlayerState {
 export enum SessionState {
   INIT = 0,  // players are still preparing / joining
   READY = 1,  // all players submitted their data
+  CLOSED = 2  // The game has been started and cannot be joined any more
 }
 
 export function getSessionInvitationLink(session: Session) {

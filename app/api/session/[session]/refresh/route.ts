@@ -10,22 +10,21 @@ export async function GET(
 ) {
   const db = new PrismaClient()
 
-  const sessionKey = params.session
+  const sessionId = params.session
 
-  if (!sessionKey) return error(db, "Invalid request")
-  let session = await db.session.findFirst({ where: { key: sessionKey }, include: { players: { include: { topics: true } } } })
-  // const session = await db.session.findFirst({ where: { key: sessionKey }, include: { players: { include: { topics: true } } } })
+  if (!sessionId) return error(db, "Invalid request")
+  const session = await db.session.findFirst({ where: { id: sessionId }, include: { players: { include: { topics: true } } } })
 
   // TODO remove session creation
   // if (!session) return error(db, "Session not found", 404)
-  if (!session) {
-    const newSession = await db.session.create({ data: { key: sessionKey }})
-    console.log(`Creating new session with key ${sessionKey}`)
-    session = await db.session.findUnique({ where: { id: newSession.id }, include: { players: { include: { topics: true } } } })
-  }
+  // if (!session) {
+  //   const newSession = await db.session.create({ data: { invitationCode: invitationCode }})
+  //   console.log(`Creating new session with invitationCode ${invitationCode}`)
+  //   session = await db.session.findUnique({ where: { id: newSession.id }, include: { players: { include: { topics: true } } } })
+  // }
   if (!session) return error(db, "Session could not be created", 400)
 
-  // await refreshState(db, session)
+  await refreshState(db, session)
   return respond(db, session)
 
 }

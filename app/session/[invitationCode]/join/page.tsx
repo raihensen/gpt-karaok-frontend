@@ -1,20 +1,22 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import { ApiResponse, Player, PlayerState, SessionState } from '@/src/types';
-import { useInitEffect } from '@/src/utils';
+import { useInitEffect } from '@/components/utils';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { setDefaultResultOrder } from 'dns';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { Alert, Button, Container, Form } from "react-bootstrap";
 import _ from "lodash";
+import Logo from '@/components/Logo';
 
-export default function Home({ params }: { params: { session: string } }) {
+export default function JoinPage({ params }: { params: { invitationCode: string } }) {
 
   const [error, setError] = useState<string>()
 
-  const [session, setSession] = useState<string>()
+  const [sessionId, setSessionId] = useState<string>()
+  const [invitationCode, setInvitationCode] = useState<string>()
   const [sessionState, setSessionState] = useState<SessionState | undefined>(undefined)
   const [player, setPlayer] = useState<Player>()
 
@@ -24,8 +26,8 @@ export default function Home({ params }: { params: { session: string } }) {
 
   // get session id from URL params
   useEffect(() => {
-    if (params.session) {
-      setSession(params.session)
+    if (params.invitationCode) {
+      setInvitationCode(params.invitationCode)
       setSessionState(SessionState.INIT)
     }
   }, [])
@@ -33,19 +35,20 @@ export default function Home({ params }: { params: { session: string } }) {
   // auto refresh
   useEffect(() => {
     const refresh = async () => {
-      if (session) {
-        const res = await fetch(`/api/session/${session}` + (player ? `/player/${player.id}` : "") + "/refresh")
+      if (sessionId) {
+        const res = await fetch(`/api/session/${sessionId}` + (player ? `/player/${player.id}` : "") + "/refresh")
         const resData: ApiResponse<{}> = await res.json()
         if (!resData.success) return setError(resData.error)
         if (resData.player) {
           setPlayer(resData.player)
         }
-        setSessionState(resData.sessionState)
+        setSessionId(resData.session.id)
+        setSessionState(resData.session.state)
       }
     }
     const handle = setInterval(refresh, 2000)
     return () => clearInterval(handle)
-  }, [session, player])
+  }, [invitationCode, player])
 
   // logo animation
   const [logoState, setLogoState] = useState<"gpt" | "ppt">("ppt")
@@ -59,50 +62,44 @@ export default function Home({ params }: { params: { session: string } }) {
     setTimeout(toggleLogo, t)
   }
 
+  const isTopicValid = (t: string) => {
+    return t.length > 0 && t.length <= 100 && t.split(" ").length <= 10
+  }
+
   return (<>
     <header className="py-3 bg-light">
       <Container style={{ maxWidth: "480px" }}>
-        <h1>
-          {logoState == "ppt" && <span style={{ color: "red", textAlign: "right" }}>ppt</span>}
-          {logoState == "gpt" && <span style={{ color: "green", textAlign: "right" }}>gpt</span>}
-          <span style={{ marginLeft: ".25rem", opacity: .5 }}>kara</span><span>ok</span>
-        </h1>
+        <Logo />
       </Container>
     </header>
     <main className="py-3">
       <Container className="d-flex flex-column gap-3" style={{ maxWidth: "480px" }}>
 
-        {!!error && (<Alert variant="danger">{error}</Alert>)}
-        <p>
-          Session: {session} -
-          sessionState: {sessionState} -
-          playerState: {player?.state ?? "undefined"} -
-          topics: {JSON.stringify(topics)}
-        </p>
+        {!!error && (<Alert variant="danger" dismissible>{error}</Alert>)}
 
         {(!player || player.state == PlayerState.JOINING) && (<>
           <Form onSubmit={async e => {
             e.preventDefault()
-            if (session && name) {
+            if (invitationCode && name) {
               const data = new FormData()
-              data.set("session", session)
               data.set("name", name)
-              const res = await fetch(`/api/session/${session}/join`, {
+              const res = await fetch(`/api/session/code/${invitationCode}/join`, {
                 method: "POST",
                 body: data
               })
               const resData: ApiResponse<{}> = await res.json()
               if (!resData.success) return setError(resData.error)
               setPlayer(resData.player)
-              setSessionState(resData.sessionState)
+              setSessionState(resData.session.state)
+              setSessionId(resData.session.id)
             }
           }}>
             <Form.Group>
               <Form.Label>Dein Name</Form.Label>
-              <Form.Control value={name ?? ""} onChange={e => setName(e.target.value)} disabled={!session}></Form.Control>
+              <Form.Control value={name ?? ""} onChange={e => setName(e.target.value)} disabled={!invitationCode}></Form.Control>
             </Form.Group>
             <Form.Group>
-              <Button type="submit" disabled={!session}>Join</Button>
+              <Button type="submit" disabled={!invitationCode}>Join</Button>
             </Form.Group>
           </Form>
         </>)}
@@ -110,11 +107,11 @@ export default function Home({ params }: { params: { session: string } }) {
         {(player?.state == PlayerState.JOINED) && (<>
           <Form className="d-flex flex-column gap-1" onSubmit={async e => {
             e.preventDefault()
-            if (session && player && topics.length) {
+            if (sessionId && player && topics.length) {
 
               const nonEmptyTopics = topics.filter(t => t.length > 0)
               // t.match(/^[A-zÀ-ú]+$/)
-              const validTopics = topics.filter(t => t.length > 0 && t.length <= 100 && t.split(" ").length <= 10)
+              const validTopics = topics.filter(isTopicValid)
               if (validTopics.length < nonEmptyTopics.length)
                 return setError("Ein Thema ist entweder zu lang (100 Zeichen / 10 Wörter) oder enthält ungültige Zeichen.")
               if (validTopics.length < 3)
@@ -122,14 +119,14 @@ export default function Home({ params }: { params: { session: string } }) {
 
               const data = new FormData()
               data.set("topics", validTopics.join(","))
-              const res = await fetch(`/api/session/${session}/player/${player.id}/submit`, {
+              const res = await fetch(`/api/session/${sessionId}/player/${player.id}/submit`, {
                 method: "POST",
                 body: data
               })
               const resData: ApiResponse<{}> = await res.json()
               if (!resData.success) return setError(resData.error)
               setPlayer(resData.player)
-              setSessionState(resData.sessionState)
+              setSessionState(resData.session.state)
             }
           }}>
             <Form.Label>Deine Präsentations-Themen</Form.Label>
@@ -143,7 +140,7 @@ export default function Home({ params }: { params: { session: string } }) {
             ))}
             
             <Form.Group>
-              <Button type="submit" disabled={!session}>Abschicken</Button>
+              <Button type="submit" disabled={topics.filter(isTopicValid).length < 3}>Abschicken</Button>
             </Form.Group>
           </Form>
           <div className="text-muted">
@@ -153,6 +150,13 @@ export default function Home({ params }: { params: { session: string } }) {
               <li>Gib mindestens drei Themen an, die nicht zu ähnlich sind.</li>
             </ul>
           </div>
+        </>)}
+
+        {player?.state == PlayerState.SUBMITTED && (<>
+        
+          <h2>Grab a drink, {player.name} :)</h2>
+          <p>Das Spiel startet gleich ...</p>
+        
         </>)}
 
 

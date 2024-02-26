@@ -6,25 +6,26 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-  // url               = env("DATABASE_URL")
-  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Session {
-  id      Int      @id @default(autoincrement())
-  key     String   @unique
-  state   Int      @default(0)
-  players Player[]
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  invitationCode String   @unique @map("key")
+  state          Int      @default(0)
+  players        Player[]
 }
 
 model Player {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
   name      String
-  state     Int     @default(0)
-  sessionId Int
-  session   Session @relation(fields: [sessionId], references: [id])
+  state     Int      @default(0)
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
   topics    Topic[]
 }
 

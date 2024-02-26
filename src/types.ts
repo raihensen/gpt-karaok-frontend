@@ -5,9 +5,7 @@ export type ApiResponse<T> = {
   error: string
 } | ({
   success: true,
-  session: string,
-  sessionState: SessionState,
-  numPlayers: number,
+  session: Omit<Session, "players"> & { numPlayers: number },
   player: Player,
   playerState: PlayerState
 } & T)
@@ -45,4 +43,8 @@ export enum PlayerState {
 export enum SessionState {
   INIT = 0,  // players are still preparing / joining
   READY = 1,  // all players submitted their data
+}
+
+export function getSessionInvitationLink(session: Session) {
+  return `${process.env.NEXT_PUBLIC_DOMAIN}/session/${session.invitationCode}/join`
 }

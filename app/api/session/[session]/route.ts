@@ -10,17 +10,17 @@ export async function GET(
 ) {
   const db = new PrismaClient()
 
-  const sessionKey = params.session
+  const sessionId = params.session
 
-  if (!sessionKey) return error(db, "Invalid request")
-  let session = await db.session.findFirst({ where: { key: sessionKey }, include: { players: { include: { topics: true } } } })
+  if (!sessionId) return error(db, "Invalid request")
+  let session = await db.session.findFirst({ where: { id: sessionId }, include: { players: { include: { topics: true } } } })
   if (!session) return error(db, "Session not found", 404)
   await refreshState(db, session)
 
   db.$disconnect()
 
   return NextResponse.json({
-    ...session,
+    session: session,
     success: true
   })
 

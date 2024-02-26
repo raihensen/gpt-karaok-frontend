@@ -16,12 +16,15 @@ export function error(db: PrismaClient, msg: string, status: number = 400) {
 export function respond(db: PrismaClient, session: Session, player?: Player | undefined) {
 
   db.$disconnect()
+  
+  const { players, ...sessionWithoutPlayers } = session
 
   return NextResponse.json({
-    session: session.key,
     success: true,
-    sessionState: session.state,
-    numPlayers: session.players.length,
+    session: {
+      ...sessionWithoutPlayers,
+      numPlayers: session.players.length
+    },
     ...(player ? {
       player: player
     } : {})

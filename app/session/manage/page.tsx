@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Alert, Badge, Button, Container, Form, Table } from "react-bootstrap";
 import _ from "lodash";
 import Logo from '@/components/Logo';
-import { FaCircleCheck, FaClipboard, FaCopy, FaHourglassHalf } from 'react-icons/fa6';
+import { FaCircleCheck, FaClipboard, FaCopy, FaHourglassHalf, FaPython } from 'react-icons/fa6';
 
 export default function ManagePage({ params }: { params: { session: string } }) {
 
@@ -46,18 +46,21 @@ export default function ManagePage({ params }: { params: { session: string } }) 
           {session.state != SessionState.CLOSED && (<>
             <h4>Einladungs-Link</h4>
             <div className="mb-3">
-              <Button variant="secondary" size="sm" style={{ fontSize: ".75em", fontFamily: "monospace" }} className="text-monospace small ms-2 p-2 d-inline-flex align-items-center gap-1" onClick={() => {
+              <Button variant="secondary" size="sm" style={{ fontSize: ".75em", fontFamily: "monospace" }} className="p-2 d-inline-flex align-items-center gap-1" onClick={() => {
                 navigator.clipboard.writeText(getSessionInvitationLink(session))
               }}>
                 <FaCopy />
                 {getSessionInvitationLink(session)}
               </Button>
             </div>
-            <p className="mb-3">
-              <a onClick={() => {
-                navigator.clipboard.writeText(session.id)
-              }}>Session ID kopieren</a>
-            </p>
+            <div className="mb-3">
+              <Button variant="warning" size="sm" className="p-2 d-inline-flex align-items-center gap-1" onClick={() => {
+                navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_PYTHON_EXE_PATH} ${process.env.NEXT_PUBLIC_BACKEND_SCRIPT_PATH} ${session.id}`)
+              }}>
+                <FaPython />
+                Python-Befehl kopieren
+              </Button>
+            </div>
 
             {session.players.length != 0 && (<>
               <div className="mb-3">

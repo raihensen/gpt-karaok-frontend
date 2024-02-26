@@ -105,6 +105,7 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
         </>)}
 
         {(player?.state == PlayerState.JOINED) && (<>
+          <h4>Hey {player.name}!</h4>
           <Form className="d-flex flex-column gap-2" onSubmit={async e => {
             e.preventDefault()
             if (sessionId && player && topics.length) {

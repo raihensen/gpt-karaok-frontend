@@ -1,7 +1,7 @@
 "use client"
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useSearchParams } from 'next/navigation'
+// import { useSearchParams } from 'next/navigation'
 
 import { ApiResponse, Player, PlayerState, Session, SessionState, getSessionInvitationLink } from '@/src/types';
 import { useInitEffect } from '@/components/utils';
@@ -19,20 +19,19 @@ export default function ManagePage({ params }: { params: { session: string } }) 
   const [session, setSession] = useState<Session>()
   const [speakers, setSpeakers] = useState<Player[]>()
 
-  const searchParams = useSearchParams()
-  useEffect(() => {
-    async function effect() {
-      const sessionId = searchParams.get('session')
-      if (sessionId && !session) {
-        const res = await fetch(`/api/session/${sessionId}`)
-        const resData: ApiResponse<{ session: Session }> = await res.json()
-        if (!resData.success) return setError(resData.error)
-        setSession(resData.session)
-      }
-    }
-    effect()
-  }, [searchParams])
-
+  // const searchParams = useSearchParams()
+  // useEffect(() => {
+  //   async function effect() {
+  //     const sessionId = searchParams.get('session')
+  //     if (sessionId && !session) {
+  //       const res = await fetch(`/api/session/${sessionId}`)
+  //       const resData: ApiResponse<{ session: Session }> = await res.json()
+  //       if (!resData.success) return setError(resData.error)
+  //       setSession(resData.session)
+  //     }
+  //   }
+  //   effect()
+  // }, [searchParams])
 
   // auto refresh
   useEffect(() => {

@@ -32,12 +32,12 @@ model Player {
   topics              Topic[]
   isSpeaker           Boolean  @default(true)
   hasStyleInstruction Boolean?
-  styleInstruction    String?
+  styleInstruction    String?  @db.Text
 }
 
 model Topic {
   id       Int    @id @default(autoincrement())
-  name     String
+  name     String @db.Text
   playerId String
   player   Player @relation(fields: [playerId], references: [id])
 }

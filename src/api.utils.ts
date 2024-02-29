@@ -1,10 +1,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Session, Player, PlayerState, SessionState } from "./types";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/src/db";
 
 
-export function error(db: PrismaClient, msg: string, status: number = 400) {
+export function error(msg: string, status: number = 400) {
+
   return NextResponse.json({
     error: msg,
     success: false
@@ -13,10 +14,8 @@ export function error(db: PrismaClient, msg: string, status: number = 400) {
   })
 }
 
-export function respond(db: PrismaClient, session: Session, player?: Player | undefined) {
+export function respond(session: Session, player?: Player | undefined) {
 
-  db.$disconnect()
-  
   const { players, ...sessionWithoutPlayers } = session
 
   return NextResponse.json({
@@ -32,7 +31,7 @@ export function respond(db: PrismaClient, session: Session, player?: Player | un
 
 }
 
-export async function refreshState(db: PrismaClient, session: Session) {
+export async function refreshState(session: Session) {
   if (session.state == SessionState.CLOSED) {
     return
   }

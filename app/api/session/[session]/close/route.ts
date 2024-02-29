@@ -4,27 +4,26 @@ import { error, respond, refreshState } from "@/src/api.utils";
 import { PrismaClient, Topic } from '@prisma/client'
 import { generateInvitationCode } from "@/src/utils";
 import { SessionState } from "@/src/types";
+import { db } from "@/src/db";
 
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params }: { params: { session: string } }
 ) {
-  const db = new PrismaClient()
+  // POST to avoid caching
 
   const sessionId = params.session
 
-  if (!sessionId) return error(db, "Invalid request")
+  if (!sessionId) return error("Invalid request")
   let session = await db.session.findFirst({ where: { id: sessionId }, include: { players: { include: { topics: true } } } })
-  if (!session) return error(db, "Session not found", 404)
+  if (!session) return error("Session not found", 404)
 
   session = await db.session.update({
     where: { id: sessionId },
     data: { state: SessionState.CLOSED },
     include: { players: { include: { topics: true } } }
   })
-
-  db.$disconnect()
 
   return NextResponse.json({
     session: session,

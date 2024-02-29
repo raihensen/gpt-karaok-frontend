@@ -4,17 +4,17 @@ import { v4 as uuidv4 } from "uuid";
 import { Session, SessionState, Player, PlayerState } from "@/src/types";
 import { error, respond, refreshState } from "@/src/api.utils";
 import { PrismaClient, Topic } from '@prisma/client'
+import { db } from "@/src/db";
 
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { code: string } }
 ) {
-  const db = new PrismaClient()
 
   const data = await req.formData()
 
-  if (!params.code) return error(db, "Invalid request", 400)
+  if (!params.code) return error("Invalid request", 400)
   const session = await await db.session.findFirst({
     where: {
       invitationCode: params.code,
@@ -22,24 +22,30 @@ export async function POST(
     },
     include: { players: { include: { topics: true } } }
   })
-  if (!session) return error(db, "Session not found", 404)
+  if (!session) return error("Session not found", 404)
 
-  const name = data.get("name") as string
-  if (!name) return error(db, "Missing name", 400)
-  if (session.players.some(p => p.name == name)) return error(db, `Pick another name, ${name} is already playing!`)
+  const firstName = data.get("firstName") as string
+  const lastName = data.get("lastName") as string
+  if (!firstName || firstName.length == 0) return error("Missing first name", 400)
+  if (!lastName || lastName.length == 0) return error("Missing last name", 400)
+
+  const name = `${firstName} ${lastName}`
+  if (session.players.some(p => p.name == name)) return error(`Pick another name, ${name} is already playing!`)
 
   const newPlayer = await db.player.create({
     data: {
       name: name,
+      firstName: firstName,
+      lastName: lastName,
       state: PlayerState.JOINED,
       sessionId: session.id
     }
   })
   const player = await db.player.findUnique({ where: { id: newPlayer.id }, include: { topics: true } })
-  if (!player) return error(db, "Internal Server Error", 500)
+  if (!player) return error("Internal Server Error", 500)
 
-  await refreshState(db, session)
-  return respond(db, session, player)
+  await refreshState(session)
+  return respond(session, player)
 
 }
 

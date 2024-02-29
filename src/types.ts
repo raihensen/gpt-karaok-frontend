@@ -10,18 +10,6 @@ export type ApiResponse<T> = {
   playerState: PlayerState
 } & T)
 
-// export type Player = {
-//   id: string
-//   name: string
-//   state: PlayerState
-//   topics?: string[]
-// }
-
-// export type Session = {
-//   id: string
-//   state: SessionState
-//   players: Player[]
-// }
 const sessionWithPlayers = Prisma.validator<Prisma.SessionDefaultArgs>()({
   include: {
     players: { include: { topics: true } }

@@ -21,7 +21,8 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
   const [player, setPlayer] = useState<Player>()
 
   // input states
-  const [name, setName] = useState<string>()
+  const [firstName, setFirstName] = useState<string>()
+  const [lastName, setLastName] = useState<string>()
   const [topics, setTopics] = useState<string[]>([])
 
   // get session id from URL params
@@ -36,7 +37,7 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
   useEffect(() => {
     const refresh = async () => {
       if (sessionId) {
-        const res = await fetch(`/api/session/${sessionId}` + (player ? `/player/${player.id}` : "") + "/refresh")
+        const res = await fetch(`/api/session/${sessionId}` + (player ? `/player/${player.id}` : "") + "/refresh", { method: "POST" })
         const resData: ApiResponse<{}> = await res.json()
         if (!resData.success) return setError(resData.error)
         if (resData.player) {
@@ -72,7 +73,9 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
         <Logo />
       </Container>
     </header>
-    <main className="py-3">
+    <main className="py-3" style={{
+      fontFamily: "Comic Sans MS"
+    }}>
       <Container className="d-flex flex-column gap-3" style={{ maxWidth: "480px" }}>
 
         {!!error && (<Alert variant="danger" dismissible>{error}</Alert>)}
@@ -80,9 +83,10 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
         {(!player || player.state == PlayerState.JOINING) && (<>
           <Form onSubmit={async e => {
             e.preventDefault()
-            if (invitationCode && name) {
+            if (invitationCode && firstName?.length && lastName?.length) {
               const data = new FormData()
-              data.set("name", name)
+              data.set("firstName", firstName)
+              data.set("lastName", lastName)
               const res = await fetch(`/api/session/code/${invitationCode}/join`, {
                 method: "POST",
                 body: data
@@ -95,17 +99,19 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
             }
           }}>
             <Form.Group className="mb-2">
-              <Form.Label>Dein Name</Form.Label>
-              <Form.Control value={name ?? ""} onChange={e => setName(e.target.value)} disabled={!invitationCode}></Form.Control>
+              <Form.Control value={firstName ?? ""} placeholder="Vorname" onChange={e => setFirstName(e.target.value)} disabled={!invitationCode}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-2">
+              <Form.Control value={lastName ?? ""} placeholder="Nachname" onChange={e => setLastName(e.target.value)} disabled={!invitationCode}></Form.Control>
             </Form.Group>
             <Form.Group>
-              <Button type="submit" disabled={!invitationCode}>Beitreten</Button>
+              <Button type="submit" disabled={!(invitationCode && firstName?.length && lastName?.length)}>Beitreten</Button>
             </Form.Group>
           </Form>
         </>)}
 
         {(player?.state == PlayerState.JOINED) && (<>
-          <h4>Hey {player.name}!</h4>
+          <h4>Hey {player.firstName}!</h4>
           <Form className="d-flex flex-column gap-2" onSubmit={async e => {
             e.preventDefault()
             if (sessionId && player && topics.length) {
@@ -155,7 +161,7 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
 
         {player?.state == PlayerState.SUBMITTED && (<>
         
-          <h2>Grab a drink, {player.name} :)</h2>
+          <h2>Grab a drink, {player.firstName} :)</h2>
           <p>Das Spiel startet gleich ...</p>
         
         </>)}

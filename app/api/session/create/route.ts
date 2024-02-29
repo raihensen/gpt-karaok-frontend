@@ -4,6 +4,8 @@ import { error, respond, refreshState } from "@/src/api.utils";
 import { PrismaClient, Topic } from '@prisma/client'
 import { generateInvitationCode } from "@/src/utils";
 import { SessionState } from "@/src/types";
+import { db } from "@/src/db";
+
 
 async function generateNewInvitationCode(db: PrismaClient) {
   for (let i = 0; i < 10; i++) {
@@ -21,24 +23,22 @@ async function generateNewInvitationCode(db: PrismaClient) {
 }
 
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params }: { params: {} }
 ) {
-  const db = new PrismaClient()
+  // POST to avoid caching
 
   const invitationCode = await generateNewInvitationCode(db)
-  if (!invitationCode) return error(db, "Internal Server Error", 500)
+  if (!invitationCode) return error("Internal Server Error", 500)
   const newSession = await db.session.create({
     data: {
-      invitationCode: generateInvitationCode(),
+      invitationCode: invitationCode,
       state: SessionState.INIT
     }
   })
   const session = await db.session.findUnique({ where: { id: newSession.id }, include: { players: { include: { topics: true } } } })
-  if (!session) return error(db, "Internal Server Error", 500)
-
-  db.$disconnect()
+  if (!session) return error("Internal Server Error", 500)
 
   return NextResponse.json({
     session: session,

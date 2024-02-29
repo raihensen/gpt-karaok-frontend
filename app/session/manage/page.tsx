@@ -20,7 +20,7 @@ export default function ManagePage({ params }: { params: { session: string } }) 
   useEffect(() => {
     const refresh = async () => {
       if (session) {
-        const res = await fetch(`/api/session/${session.id}`)
+        const res = await fetch(`/api/session/${session.id}`, { method: "POST" })
         const resData: ApiResponse<{session: Session}> = await res.json()
         if (!resData.success) return setError(resData.error)
         setSession(resData.session)
@@ -65,17 +65,17 @@ export default function ManagePage({ params }: { params: { session: string } }) 
             {session.players.length != 0 && (<>
               <div className="mb-3">
                 <Button variant="success" onClick={async () => {
-                  const res = await fetch(`/api/session/${session.id}/close`)
+                  const res = await fetch(`/api/session/${session.id}/close`, { method: "POST" })
                   const resData: ApiResponse<{ session: Session }> = await res.json()
                   if (!resData.success) return setError(resData.error)
                   setSession(resData.session)
                 }} disabled={session.state != SessionState.READY}>Spiel starten</Button>
               </div>
-              {session.state != SessionState.READY && (<div className="mb-3">
+              {(session.state != SessionState.READY && session.players.some(p => p.state == PlayerState.SUBMITTED)) && (<div className="mb-3">
                 <p>
                   Es sind nicht alle Spieler*innen bereit.
                   <Button size="sm" variant="secondary" className="ms-1" onClick={async () => {
-                    const res = await fetch(`/api/session/${session.id}/close`)
+                    const res = await fetch(`/api/session/${session.id}/close`, { method: "POST" })
                     const resData: ApiResponse<{ session: Session }> = await res.json()
                     if (!resData.success) return setError(resData.error)
                     setSession(resData.session)
@@ -98,7 +98,8 @@ export default function ManagePage({ params }: { params: { session: string } }) 
                   {_.orderBy(session.players, p => [
                     p.state != PlayerState.SUBMITTED ? 0 : 1,
                     p.createdAt,
-                    p.name
+                    p.firstName,
+                    p.lastName
                   ], ["asc", "desc", "asc"]).map((p, i) => (
                     <tr key={i}>
                       <td>
@@ -121,7 +122,7 @@ export default function ManagePage({ params }: { params: { session: string } }) 
         
           <Button onClick={async () => {
             const res = await fetch(`/api/session/create`, {
-              method: "GET"
+              method: "POST"
             })
             const resData: ApiResponse<{session: Session}> = await res.json()
             if (!resData.success) return setError(resData.error)

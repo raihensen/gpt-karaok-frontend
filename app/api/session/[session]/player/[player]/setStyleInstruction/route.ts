@@ -24,8 +24,6 @@ export async function POST(
   const styleInstruction = data.get("styleInstruction") as string
   if (!styleInstruction) return error("Invalid request")
 
-  console.log(styleInstruction)
-
   await db.player.update({ data: { styleInstruction: styleInstruction }, where: { id: player.id }})
 
   return NextResponse.json({

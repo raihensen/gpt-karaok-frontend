@@ -161,18 +161,18 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
 
         {player?.state == PlayerState.SUBMITTED && (<>
         
-          {player.styleInstruction === null && (<>
+          {player.hasStyleInstruction === null && (<>
             <h2>Gleich kann es losgehen, {player.firstName} :)</h2>
             <p><strong>Wichtig:</strong> Bitte lasse diese Seite geöffnet. Bevor dein Vortrag losgeht, erscheint hier evtl. noch ein kleiner Hinweis für dich.</p>
           </>)}
-          {player.styleInstruction && (<>
-            {player.styleInstruction == "-" && (<>
+          {player.hasStyleInstruction !== null && (<>
+            {!player.hasStyleInstruction && (<>
               <h2>Kein Hinweis :)</h2>
               <p>Viel Spaß bei den Vorträgen!</p>
             </>)}
-            {player.styleInstruction != "-" && (<>
+            {player.styleInstruction && (<>
               <h2>Hinweis für deinen Vortrag</h2>
-              <p className="large">{player.styleInstruction}</p>
+              <Alert variant="info">{player.styleInstruction}</Alert>
             </>)}
           </>)}
         </>)}

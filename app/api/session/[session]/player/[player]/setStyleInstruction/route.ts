@@ -21,10 +21,10 @@ export async function POST(
   if (!player) return error("Player not found", 404)
 
   const data = await req.formData()
-  const styleInstruction = data.get("styleInstruction") as string
-  if (!styleInstruction) return error("Invalid request")
+  const styleInstruction = data.get("styleInstruction") as string | null
+  const hasStyleInstruction = !!styleInstruction
 
-  await db.player.update({ data: { styleInstruction: styleInstruction }, where: { id: player.id }})
+  await db.player.update({ data: { styleInstruction: styleInstruction, hasStyleInstruction: hasStyleInstruction }, where: { id: player.id }})
 
   return NextResponse.json({
     success: true

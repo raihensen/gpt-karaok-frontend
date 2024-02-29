@@ -20,15 +20,16 @@ model Session {
 }
 
 model Player {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  name      String
-  firstName String?
-  lastName  String?
-  state     Int      @default(0)
-  sessionId String
-  session   Session  @relation(fields: [sessionId], references: [id])
-  topics    Topic[]
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  name             String
+  firstName        String?
+  lastName         String?
+  state            Int      @default(0)
+  sessionId        String
+  session          Session  @relation(fields: [sessionId], references: [id])
+  topics           Topic[]
+  styleInstruction String?
 }
 
 model Topic {

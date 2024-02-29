@@ -17,27 +17,20 @@ export async function POST(
   if (!session) return error("Session not found", 404)
 
   if (!params.player) return error("Invalid request")
-
-  console.log("Player", params.player)
-  console.log(JSON.stringify(session))
   const player = session.players.find(p => p.id == params.player)
   if (!player) return error("Player not found", 404)
-  if (!session.players.some(p => p.id == player.id)) return error("Player not part of the session", 404)
 
   const data = await req.formData()
-  const topicsDef = data.get("topics") as string
-  if (!topicsDef) return error("Invalid request")
-  const topics = topicsDef.split(";").map(t => t.replaceAll("<semicolon>", ";").trim())
+  const styleInstruction = data.get("styleInstruction") as string
+  if (!styleInstruction) return error("Invalid request")
 
-  await db.topic.deleteMany({ where: { playerId: player.id } })
-  await db.topic.createMany({ data: topics.map(t => ({ name: t, playerId: player.id as Player["id"] })) })
-  await db.player.update({ where: { id: player.id }, data: { state: PlayerState.SUBMITTED } })
+  console.log(styleInstruction)
 
-  const player1 = await db.player.findUnique({ where: { id: player.id }, include: { topics: true } })
-  if (!player1) return error("Internal Server Error", 500)
+  await db.player.update({ data: { styleInstruction: styleInstruction }, where: { id: player.id }})
 
-  await refreshState(session)
-  return respond(session, player1)
+  return NextResponse.json({
+    success: true
+  })
 
 }
 

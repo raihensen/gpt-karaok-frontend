@@ -125,7 +125,7 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
                 return setError("Bitte gib mindestens drei Themen an.")
 
               const data = new FormData()
-              data.set("topics", validTopics.join(","))
+              data.set("topics", validTopics.map(t => t.replaceAll(";", "<semicolon>")).join(";"))
               const res = await fetch(`/api/session/${sessionId}/player/${player.id}/submit`, {
                 method: "POST",
                 body: data
@@ -161,11 +161,21 @@ export default function JoinPage({ params }: { params: { invitationCode: string 
 
         {player?.state == PlayerState.SUBMITTED && (<>
         
-          <h2>Grab a drink, {player.firstName} :)</h2>
-          <p>Das Spiel startet gleich ...</p>
-        
+          {player.styleInstruction === null && (<>
+            <h2>Gleich kann es losgehen, {player.firstName} :)</h2>
+            <p><strong>Wichtig:</strong> Bitte lasse diese Seite geöffnet. Bevor dein Vortrag losgeht, erscheint hier evtl. noch ein kleiner Hinweis für dich.</p>
+          </>)}
+          {player.styleInstruction && (<>
+            {player.styleInstruction == "-" && (<>
+              <h2>Kein Hinweis :)</h2>
+              <p>Viel Spaß bei den Vorträgen!</p>
+            </>)}
+            {player.styleInstruction != "-" && (<>
+              <h2>Hinweis für deinen Vortrag</h2>
+              <p className="large">{player.styleInstruction}</p>
+            </>)}
+          </>)}
         </>)}
-
 
       </Container>
 

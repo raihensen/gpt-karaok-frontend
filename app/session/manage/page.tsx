@@ -20,7 +20,7 @@ export default function ManagePage({ params }: { params: { session: string } }) 
   useEffect(() => {
     const refresh = async () => {
       if (session) {
-        const res = await fetch(`/api/session/${session.id}`, { method: "POST" })
+        const res = await fetch(`/api/session/${session.id}`, { method: "GET" })
         const resData: ApiResponse<{session: Session}> = await res.json()
         if (!resData.success) return setError(resData.error)
         setSession(resData.session)

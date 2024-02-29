@@ -146,7 +146,7 @@ export default function ManagePage({ params }: { params: { session: string } }) 
                   ))}
                 </tbody>
               </Table>
-              <p>{speakers?.map(sp => sp.name).join(", ")}</p>
+              {/* <p>{speakers?.map(sp => sp.name).join(", ")}</p> */}
             </div>
           </>)}
 
